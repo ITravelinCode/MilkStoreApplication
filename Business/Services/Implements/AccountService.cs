@@ -73,6 +73,7 @@ namespace Business.Services.Implements
                         account.Status = 1;
                         account.RoleId = 2;
                         account.Password = await HashedPassword(registerRequest.Password);
+                        await _unitOfWork.AccountRepository.InsertAsync(account);
                         await _unitOfWork.SaveAsync();
                         await transaction.CommitAsync();
                         return GenerateJwtToken(account);
@@ -154,8 +155,8 @@ namespace Business.Services.Implements
                                 new Claim(ClaimTypes.Role, account.RoleId.ToString()),
                                 new Claim("accountId", account.AccountId.ToString())
                 }),
-                Issuer = _configuration["Issuer"],
-                Audience = _configuration["Audience"],
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"],
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };

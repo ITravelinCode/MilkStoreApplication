@@ -1,5 +1,0 @@
-D:\Semester 8\PRM392\MilkStore\Business\obj\Debug\net8.0\Business.csproj.AssemblyReference.cache
-D:\Semester 8\PRM392\MilkStore\Business\obj\Debug\net8.0\Business.GeneratedMSBuildEditorConfig.editorconfig
-D:\Semester 8\PRM392\MilkStore\Business\obj\Debug\net8.0\Business.AssemblyInfoInputs.cache
-D:\Semester 8\PRM392\MilkStore\Business\obj\Debug\net8.0\Business.AssemblyInfo.cs
-D:\Semester 8\PRM392\MilkStore\Business\obj\Debug\net8.0\Business.csproj.CoreCompileInputs.cache

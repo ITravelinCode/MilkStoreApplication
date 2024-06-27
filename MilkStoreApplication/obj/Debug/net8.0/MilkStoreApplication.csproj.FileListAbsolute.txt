@@ -1,6 +1,0 @@
-D:\Semester 8\PRM392\MilkStore\MilkStoreApplication\obj\Debug\net8.0\MilkStoreApplication.csproj.AssemblyReference.cache
-D:\Semester 8\PRM392\MilkStore\MilkStoreApplication\obj\Debug\net8.0\MilkStoreApplication.GeneratedMSBuildEditorConfig.editorconfig
-D:\Semester 8\PRM392\MilkStore\MilkStoreApplication\obj\Debug\net8.0\MilkStoreApplication.AssemblyInfoInputs.cache
-D:\Semester 8\PRM392\MilkStore\MilkStoreApplication\obj\Debug\net8.0\MilkStoreApplication.AssemblyInfo.cs
-D:\Semester 8\PRM392\MilkStore\MilkStoreApplication\obj\Debug\net8.0\MilkStoreApplication.csproj.CoreCompileInputs.cache
-D:\Semester 8\PRM392\MilkStore\MilkStoreApplication\obj\Debug\net8.0\MilkStoreApplication.MvcApplicationPartsAssemblyInfo.cache

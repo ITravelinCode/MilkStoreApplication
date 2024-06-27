@@ -31,7 +31,8 @@ namespace Business.Services.Implements
                 var account = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
                 if (account != null)
                 {
-                    var carts = await _unitOfWork.CartRepository.GetAsync(c => c.AccountId == accountId);
+                    var carts = await _unitOfWork.CartRepository
+                        .GetAsync(c => c.AccountId == accountId);
                     var result = _mapper.Map<List<CartResponse>>(carts.ToList());
                     return result;
                 }

@@ -19,6 +19,11 @@ namespace FLY.DataAccess.Repositories.Implements
             await DeleteAsync(entityToDelete);
         }
 
+        public async Task RemoveRangeAsync(IEnumerable<TEntity> entities)
+        {
+            dbSet.RemoveRange(entities);
+        }
+
         public async Task DeleteAsync(TEntity entityToDelete)
         {
             if(context.Entry(entityToDelete).State == EntityState.Detached)
@@ -61,9 +66,9 @@ namespace FLY.DataAccess.Repositories.Implements
             }
             if(pageIndex.HasValue && pageSize.HasValue)
             {
-                int validPageIndex = pageIndex.Value > 0 ? pageIndex.Value - 1 : 1;
-                int validPageSize = pageSize.HasValue ? pageSize.Value : 10;
-                query = query.Skip(validPageIndex * validPageSize).Take(validPageIndex);
+                int validPageIndex = pageIndex.Value > 0 ? pageIndex.Value - 1 : 0;
+                int validPageSize = pageSize.Value > 0 ? pageSize.Value : 10;
+                query = query.Skip(validPageIndex * validPageSize).Take(validPageSize);
             }
             return await query.ToListAsync();
         }
@@ -76,6 +81,12 @@ namespace FLY.DataAccess.Repositories.Implements
         public async Task InsertAsync(TEntity entity)
         {
             await dbSet.AddAsync(entity);
+        }
+
+        public async Task AddRangeAsync(IEnumerable<TEntity> entities)
+        {
+            await dbSet.AddRangeAsync(entities);
+            await context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(TEntity entityToUpdate)

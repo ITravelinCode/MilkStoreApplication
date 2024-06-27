@@ -4,8 +4,9 @@ namespace Business.Services.Interfaces
 {
     public interface IProductService
     {
-        Task<List<ProductResponse>> GetPaginationProductsAsync(int pageIndex, int pageSize);
+        Task<List<ProductResponse>> GetPaginationProductsAsync(int? pageIndex, int? pageSize);
         Task<ProductResponse> GetProductById(int productId);
         Task<List<ProductResponse>> GetProductsAsync();
+        Task<List<ProductResponse>> SearchProductsByName(string productName);
     }
 }

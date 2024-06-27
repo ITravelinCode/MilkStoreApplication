@@ -35,7 +35,7 @@ namespace Business.Services.Implements
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<List<ProductResponse>> GetPaginationProductsAsync(int pageIndex, int pageSize)
+        public async Task<List<ProductResponse>> GetPaginationProductsAsync(int? pageIndex, int? pageSize)
         {
             try
             {
@@ -55,6 +55,19 @@ namespace Business.Services.Implements
             {
                 var product = await _unitOfWork.ProductRepository.GetByIDAsync(productId);
                 return _mapper.Map<ProductResponse>(product);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<ProductResponse>> SearchProductsByName(string productName)
+        {
+            try
+            {
+                var products = await _unitOfWork.ProductRepository.FindAsync(p => p.ProductName.Contains(productName));
+                return _mapper.Map<List<ProductResponse>>(products);
             }
             catch (Exception ex)
             {

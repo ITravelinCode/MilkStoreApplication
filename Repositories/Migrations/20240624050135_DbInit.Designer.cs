@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(MilkStoreContext))]
-    [Migration("20240619082946_DbInit")]
+    [Migration("20240624050135_DbInit")]
     partial class DbInit
     {
         /// <inheritdoc />
@@ -36,10 +36,10 @@ namespace DataAccess.Migrations
                     b.Property<int>("AccountId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CartQuantity")
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductId")
+                    b.Property<int>("Quantity")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
