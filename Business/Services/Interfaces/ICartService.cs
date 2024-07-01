@@ -7,5 +7,6 @@ namespace Business.Services.Interfaces
         Task<List<CartResponse>> GetCartsByAccountId(int accountId);
         Task<bool> isAddProductIntoCart(CartRequest cartRequest);
         Task<bool> isRemoveProductFromCart(int productId, int accountId);
+        Task<bool> isUpdateCart(int cartId, CartRequest cartRequest);
     }
 }

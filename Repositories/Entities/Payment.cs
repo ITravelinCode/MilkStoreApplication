@@ -19,6 +19,7 @@ namespace DataAccess.Entities
         [StringLength(100)]
         public string PaymentMethod { get; set; }
         public DateTime PaymentDate { get; set; }
+        public DateTime ExpireDate { get; set; }
         [Required]
         public double PaymentAmount { get; set; }
         public int AccountId { get; set; }

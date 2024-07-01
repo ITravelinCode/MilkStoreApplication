@@ -102,6 +102,7 @@ namespace Business.Services.Implements
                             _mapper.Map(request, account);
                             await _unitOfWork.AccountRepository.UpdateAsync(account);
                             await _unitOfWork.SaveAsync();
+                            await transaction.CommitAsync();
                             return true;
                         }
                         catch

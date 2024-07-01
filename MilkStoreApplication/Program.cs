@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Business.Services.Implements;
 using Business.Services.Interfaces;
+using MilkStoreApplication.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,7 +89,10 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddAutoMapper(typeof(Program), typeof(MapperProfile));
+
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -99,6 +103,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MilkStore API v1"));
 }
+
+app.UseMiddleware<RegisterAccountMiddleware>();
 
 app.UseHttpsRedirection();
 

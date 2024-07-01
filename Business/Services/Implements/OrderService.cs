@@ -41,22 +41,29 @@ namespace Business.Services.Implements
             {
                 try
                 {
-                    var order = _mapper.Map<Order>(orderRequest);
-                    order.AccountId = accountId;
-                    order.PaymentId = 1;
-                    order.TotalPrice = order.orderDetails.Sum(od => od.OrderQuantity * od.ProductPrice);
-                    await _unitOfWork.OrderRepository.InsertAsync(order);
-                    await _unitOfWork.SaveAsync();
-                    await transaction.CommitAsync();
-                    foreach (var orderDetail in order.orderDetails)
+                    var exitedAccount = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
+                    var exitedPayment = await  _unitOfWork.PaymentRepository.GetByIDAsync(orderRequest.PaymentId);
+                    if(exitedAccount != null && exitedAccount !=null)
                     {
-                        orderDetail.OrderId = orderDetail.OrderId;
+                        var order = _mapper.Map<Order>(orderRequest);
+                        order.AccountId = accountId;
+                        order.Status = 1;
+                        order.TotalPrice = order.orderDetails.Sum(od => od.OrderQuantity * od.ProductPrice);
+                        await _unitOfWork.OrderRepository.InsertAsync(order);
+                        await _unitOfWork.SaveAsync();
+                        await transaction.CommitAsync();
+                        foreach (var orderDetail in order.orderDetails)
+                        {
+                            orderDetail.OrderId = order.OrderId;
+                            orderDetail.Status = order.Status;
+                        }
+                        await _unitOfWork.OrderDetailRepository.AddRangeAsync(order.orderDetails);
+                        await _unitOfWork.SaveAsync();
+                        await transaction.CommitAsync();
+                        var orderResponse = _mapper.Map<OrderResponse>(order);
+                        return orderResponse;
                     }
-                    await _unitOfWork.OrderDetailRepository.AddRangeAsync(order.orderDetails);
-                    await _unitOfWork.SaveAsync();
-                    await transaction.CommitAsync();
-                    var orderResponse = _mapper.Map<OrderResponse>(order);
-                    return orderResponse;
+                    throw new ArgumentNullException($"1 or both parameters(Account/Payment) not found");
                 }
                 catch (Exception ex)
                 {
@@ -74,7 +81,7 @@ namespace Business.Services.Implements
                 if (order == null) throw new Exception("Order not found");
                 var orderDetails = await _unitOfWork.OrderDetailRepository.FindAsync(o => o.OrderId == orderId);
                 await _unitOfWork.OrderRepository.DeleteAsync(order);
-                await _unitOfWork.OrderDetailRepository.RemoveRangeAsync(orderDetails);
+                await _unitOfWork.OrderDetailRepository.DeleteRangeAsync(orderDetails);
                 await _unitOfWork.SaveAsync();
                 return true;
             }

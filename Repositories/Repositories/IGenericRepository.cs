@@ -23,6 +23,5 @@ namespace FLY.DataAccess.Repositories
         Task DeleteRangeAsync(IEnumerable<TEntity> entities);
         Task<int> CountAsync(Expression<Func<TEntity, bool>> filter = null);
         Task AddRangeAsync(IEnumerable<TEntity> entities);
-        Task RemoveRangeAsync(IEnumerable<TEntity> entities);
     }
 }

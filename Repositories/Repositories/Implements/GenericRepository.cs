@@ -19,11 +19,6 @@ namespace FLY.DataAccess.Repositories.Implements
             await DeleteAsync(entityToDelete);
         }
 
-        public async Task RemoveRangeAsync(IEnumerable<TEntity> entities)
-        {
-            dbSet.RemoveRange(entities);
-        }
-
         public async Task DeleteAsync(TEntity entityToDelete)
         {
             if(context.Entry(entityToDelete).State == EntityState.Detached)
@@ -31,11 +26,13 @@ namespace FLY.DataAccess.Repositories.Implements
                 dbSet.Attach(entityToDelete);
             }
             dbSet.Remove(entityToDelete);
+            await Task.CompletedTask;
         }
 
         public async Task DeleteRangeAsync(IEnumerable<TEntity> entities)
         {
             dbSet.RemoveRange(entities);
+            await Task.CompletedTask;
         }
 
         public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> expression)
@@ -93,6 +90,7 @@ namespace FLY.DataAccess.Repositories.Implements
         {
             dbSet.Attach(entityToUpdate);
             context.Entry(entityToUpdate).State = EntityState.Modified;
+            await Task.CompletedTask;
         }
 
         public async Task<int> CountAsync(Expression<Func<TEntity, bool>> filter = null)

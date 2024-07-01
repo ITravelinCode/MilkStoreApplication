@@ -123,6 +123,9 @@ namespace DataAccess.Migrations
                     b.Property<int>("AccountId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("ExpireDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<double>("PaymentAmount")
                         .HasColumnType("float");
 
@@ -264,7 +267,7 @@ namespace DataAccess.Migrations
                     b.HasOne("DataAccess.Entities.Payment", "Payment")
                         .WithMany()
                         .HasForeignKey("PaymentId")
-                        .OnDelete(DeleteBehavior.ClientNoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Payment");
