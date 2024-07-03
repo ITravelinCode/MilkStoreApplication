@@ -43,7 +43,6 @@ namespace Business
                     hash.Append(theByte.ToString("x2"));
                 }
             }
-
             return hash.ToString();
         }
     }

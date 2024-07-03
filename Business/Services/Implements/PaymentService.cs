@@ -4,14 +4,7 @@ using Business.Services.Interfaces;
 using Business.Vnpay;
 using DataAccess.Entities;
 using FLY.DataAccess.Repositories;
-using FLY.DataAccess.Repositories.Implements;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
 
 namespace Business.Services.Implements
 {
@@ -19,43 +12,51 @@ namespace Business.Services.Implements
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PaymentService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration)
+        public PaymentService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _configuration = configuration;
         }
 
-        public async Task<List<PaymentResponse>> GetPaymentsByAccountId(int accountId)
+        public async Task<List<PaymentResponse>> GetPaymentsByOrderId(int orderId)
         {
-            var payments = await _unitOfWork.PaymentRepository.FindAsync(p => p.AccountId == accountId);
+            var payments = await _unitOfWork.PaymentRepository.FindAsync(p => p.OrderId == orderId);
             return _mapper.Map<List<PaymentResponse>>(payments.ToList());
         }
 
-        public async Task<(PaymentResponse, string)> CreatePayment(PaymentRequest paymentRequest)
+        public async Task<PaymentResponse> CreatePayment(PaymentRequest paymentRequest)
         {
             using (var transaction = _unitOfWork.BeginTransaction())
             {
                 try
                 {
-                    var exitedAccount = await _unitOfWork.AccountRepository.GetByIDAsync(paymentRequest.AccountId);
-                    if (exitedAccount != null)
+                    var existedOrder = await _unitOfWork.OrderRepository.GetByIDAsync(int.Parse(paymentRequest.vnp_TxnRef));
+                    if(existedOrder != null)
                     {
-                        var payment = _mapper.Map<Payment>(paymentRequest);
-                        payment.PaymentDate = DateTime.Now;
-                        payment.ExpireDate = DateTime.Now.AddMinutes(30);
+                        var payment = new Payment()
+                        {
+                            PaymentMethod = "VPN",
+                            BankCode = paymentRequest.vnp_BankCode,
+                            BankTranNo = paymentRequest.vnp_BankTranNo,
+                            CardType = paymentRequest.vnp_CardType,
+                            PaymentInfo = paymentRequest.vnp_OrderInfo,
+                            PayDate = DateTime.ParseExact(paymentRequest.vnp_PayDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture),
+                            TransactionNo = paymentRequest.vnp_TransactionNo,
+                            TransactionStatus = int.Parse(paymentRequest.vnp_TransactionStatus),
+                            PaymentAmount = double.Parse(paymentRequest.vnp_Amount),
+                            OrderId = int.Parse(paymentRequest.vnp_TxnRef)
+                        };
                         await _unitOfWork.PaymentRepository.InsertAsync(payment);
+                        //Update Order's status is Paid
+                        existedOrder.Status = 2;
+                        await _unitOfWork.OrderRepository.UpdateAsync(existedOrder);
                         await _unitOfWork.SaveAsync();
                         await transaction.CommitAsync();
-                        var paymentUrl = CreateVnpayLink(payment);
-                        return (_mapper.Map<PaymentResponse>(payment), paymentUrl);
-                    }
-                    else
+                        return _mapper.Map<PaymentResponse>(payment);
+                    } else
                     {
-                        return (null,null);
+                        return null;
                     }
                 }
                 catch (Exception ex)
@@ -98,7 +99,7 @@ namespace Business.Services.Implements
                 try
                 {
                     var payment = (await _unitOfWork.PaymentRepository
-                        .FindAsync(p => p.PaymentId == paymentId && p.AccountId == paymentRequest.AccountId)).FirstOrDefault();
+                        .FindAsync(p => p.PaymentId == paymentId)).FirstOrDefault();
                     if (payment != null)
                     {
                         _mapper.Map(paymentRequest, payment);
@@ -119,14 +120,6 @@ namespace Business.Services.Implements
                 }
             }
         }
-        private string CreateVnpayLink(Payment payment)
-        {
-            var paymentUrl = string.Empty;
-            var vpnRequest = new VnpayRequest(_configuration["VNpay:Version"], _configuration["VNpay:tmnCode"],
-                payment.PaymentDate, "127.0.0.1", (decimal)payment.PaymentAmount, "VND", "other", 
-                "Thanh toan don hang", _configuration["VNpay:ReturnUrl"], $"{payment.PaymentId}", payment.ExpireDate);
-            paymentUrl = vpnRequest.GetLink(_configuration["VNpay:PaymentUrl"], _configuration["VNpay:HashSecret"]);
-            return paymentUrl;
-        }
+        
     }
 }

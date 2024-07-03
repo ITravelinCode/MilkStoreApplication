@@ -9,7 +9,6 @@ namespace Business.Models.OrderView
 {
     public class OrderDetailRequest
     {
-        public int OrderId { get; set; }
         public int ProductId { get; set; }
         public int OrderQuantity { get; set; }
         public double ProductPrice { get; set; }

@@ -19,12 +19,13 @@ namespace DataAccess.Entities
         [Required]
         public double TotalPrice { get; set; }
         [Required]
-        public int Status { get; set; }
+        public int Status { get; set; } //0 = Pending, 1 = Paid, 2 = Failed
+        [Required]
+        public DateTime OrderDate { get; set; }
+        [Required]
+        public DateTime ExpireDate { get; set; }
         [ForeignKey("AccountId")]
         public Account account { get; set; }
         public ICollection<OrderDetail>? orderDetails { get; set; }
-        public int PaymentId {  get; set; }
-        [ForeignKey("PaymentId")]
-        public Payment? Payment { get; set; }
     }
 }

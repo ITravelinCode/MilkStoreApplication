@@ -26,9 +26,6 @@ namespace DataAccess.Entities
         [Required]
         public double ProductPrice { get; set; }
 
-        [Required]
-        public int Status { get; set; }
-
         [ForeignKey("OrderId")]
         public Order Order { get; set; }
 

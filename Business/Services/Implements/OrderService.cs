@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
 using Business.Models.OrderView;
 using Business.Services.Interfaces;
+using Business.Vnpay;
 using DataAccess.Entities;
 using FLY.DataAccess.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,11 +18,13 @@ namespace Business.Services.Implements
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
 
-        public OrderService(IUnitOfWork unitOfWork, IMapper mapper)
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _configuration = configuration;
         }
 
         public async Task<List<OrderResponse>> GetOrderByAccount(int accountId)
@@ -35,35 +40,47 @@ namespace Business.Services.Implements
             }
         }
 
-        public async Task<OrderResponse> CreateOrder(int accountId, OrderRequest orderRequest)
+        public async Task<string> CreateOrder(int accountId)
         {
             using (var transaction = _unitOfWork.BeginTransaction())
             {
                 try
                 {
-                    var exitedAccount = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
-                    var exitedPayment = await  _unitOfWork.PaymentRepository.GetByIDAsync(orderRequest.PaymentId);
-                    if(exitedAccount != null && exitedAccount !=null)
+                    var existedAccount = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
+                    var cartList = await _unitOfWork.CartRepository.FindAsync(c => c.AccountId == accountId);
+                    if(existedAccount != null && cartList.Any())
                     {
-                        var order = _mapper.Map<Order>(orderRequest);
-                        order.AccountId = accountId;
-                        order.Status = 1;
-                        order.TotalPrice = order.orderDetails.Sum(od => od.OrderQuantity * od.ProductPrice);
+                        var order = new Order()
+                        {
+                            AccountId = accountId,
+                            Status = 0,
+                            OrderDate = DateTime.Now,
+                            ExpireDate = DateTime.Now.AddMinutes(30),
+                            TotalPrice = cartList.Sum(c => c.Quantity * c.UnitPrice),
+                            orderDetails = new List<OrderDetail>()
+                        };
+                        
                         await _unitOfWork.OrderRepository.InsertAsync(order);
                         await _unitOfWork.SaveAsync();
-                        await transaction.CommitAsync();
-                        foreach (var orderDetail in order.orderDetails)
+                        foreach (var item in cartList)
                         {
-                            orderDetail.OrderId = order.OrderId;
-                            orderDetail.Status = order.Status;
+                            var orderDetail = new OrderDetail()
+                            {
+                                OrderId = order.OrderId,
+                                ProductId = item.ProductId,
+                                OrderQuantity = item.Quantity,
+                                ProductPrice = item.UnitPrice
+                            };
+                            order.orderDetails.Add(orderDetail);
                         }
                         await _unitOfWork.OrderDetailRepository.AddRangeAsync(order.orderDetails);
+                        await _unitOfWork.CartRepository.DeleteRangeAsync(cartList);
                         await _unitOfWork.SaveAsync();
                         await transaction.CommitAsync();
-                        var orderResponse = _mapper.Map<OrderResponse>(order);
-                        return orderResponse;
+                        var paymentUrl = CreateVnpayLink(order);
+                        return paymentUrl;
                     }
-                    throw new ArgumentNullException($"1 or both parameters(Account/Payment) not found");
+                    throw new ArgumentNullException($"Account is not correct");
                 }
                 catch (Exception ex)
                 {
@@ -71,6 +88,21 @@ namespace Business.Services.Implements
                     throw new Exception(ex.Message);
                 }
             }
+        }
+
+        public string CreateVnpayLink(Order order)
+        {
+            var paymentUrl = string.Empty;
+
+            var vpnRequest = new VnpayRequest(_configuration["VNpay:Version"], _configuration["VNpay:tmnCode"],
+                order.OrderDate, "127.0.0.1", (decimal)order.TotalPrice, "VND", "other",
+                $"Thanh toan don hang {order.OrderId}", _configuration["VNpay:ReturnUrl"], 
+                $"{order.OrderId}", order.ExpireDate);
+
+            paymentUrl = vpnRequest.GetLink(_configuration["VNpay:PaymentUrl"], 
+                _configuration["VNpay:HashSecret"]);
+
+            return paymentUrl;
         }
 
         public async Task<bool> isDeleteOrder(int orderId)
@@ -88,6 +120,77 @@ namespace Business.Services.Implements
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<OrderResponse> UpdateOrder(int orderId, int accountId, OrderRequest orderRequest)
+        {
+            using (var transaction = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var existedAccount = await _unitOfWork.AccountRepository.GetByIDAsync(accountId);
+                    var existedOrder = (await _unitOfWork.OrderRepository
+                        .FindAsync(o => o.AccountId == accountId && o.OrderId == orderId)).FirstOrDefault();
+                    if (existedOrder != null)
+                    {
+                        _mapper.Map(orderRequest, existedOrder);
+                        foreach (var existedDetail in existedOrder.orderDetails.ToList())
+                        {
+                            var updatedDetail = orderRequest.OrderDetails?.FirstOrDefault(d => d.ProductId == existedDetail.ProductId);
+                            if (updatedDetail != null)
+                            {
+                                _mapper.Map(updatedDetail, existedDetail);
+                                await _unitOfWork.OrderDetailRepository.UpdateAsync(existedDetail);
+                            }
+                            else
+                            {
+                                await _unitOfWork.OrderDetailRepository.DeleteAsync(existedDetail);
+                            }
+                        }
+                        existedOrder.TotalPrice = existedOrder.orderDetails.Sum(od => od.OrderQuantity * od.ProductPrice);
+                        await _unitOfWork.OrderRepository.UpdateAsync(existedOrder);
+                        await _unitOfWork.SaveAsync();
+                        await transaction.CommitAsync();
+                        return _mapper.Map<OrderResponse>(existedOrder);
+                    }
+                    throw new ArgumentNullException($"Not found");
+                }
+                catch(Exception ex)
+                {
+                    transaction.Rollback();
+                    throw new Exception(ex.Message);
+                }
+            }
+        }
+
+        public async Task<bool> UpdateStatusOrder(int orderId, int accountId, int status)
+        {
+            using(var transaction = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var existedOrder = (await _unitOfWork.OrderRepository
+                        .FindAsync(o => o.AccountId == accountId && o.OrderId == orderId))
+                        .FirstOrDefault();
+                    if (existedOrder != null)
+                    {
+                        existedOrder.Status = status;
+                        await _unitOfWork.OrderRepository.UpdateAsync(existedOrder);
+                        await _unitOfWork.SaveAsync();
+                        await transaction.CommitAsync();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch(Exception ex)
+                {
+                    transaction.Rollback();
+                    throw new Exception(ex.Message);
+                }
             }
         }
     }

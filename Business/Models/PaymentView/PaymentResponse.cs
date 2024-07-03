@@ -9,11 +9,15 @@ namespace Business.Models.PaymentView
 {
     public class PaymentResponse
     {
-        public int PaymentId { get; set; }
         public string PaymentMethod { get; set; }
-        public DateTime PaymentDate { get; set; }
-        public DateTime ExpireDate { get; set; }
+        public string? BankCode { get; set; }
+        public string? BankTranNo { get; set; }
+        public string? CardType { get; set; }
+        public string? PaymentInfo { get; set; }
+        public DateTime PayDate { get; set; }
+        public string? TransactionNo { get; set; }
+        public int TransactionStatus { get; set; }
         public double PaymentAmount { get; set; }
-        public int AccountId { get; set; }
+        public int OrderId { get; set; }
     }
 }

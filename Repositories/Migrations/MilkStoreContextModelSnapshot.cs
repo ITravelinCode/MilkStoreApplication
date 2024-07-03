@@ -42,6 +42,9 @@ namespace DataAccess.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<double>("UnitPrice")
+                        .HasColumnType("float");
+
                     b.HasKey("CartId");
 
                     b.HasIndex("AccountId");
@@ -62,8 +65,8 @@ namespace DataAccess.Migrations
                     b.Property<int>("AccountId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PaymentId")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -74,8 +77,6 @@ namespace DataAccess.Migrations
                     b.HasKey("OrderId");
 
                     b.HasIndex("AccountId");
-
-                    b.HasIndex("PaymentId");
 
                     b.ToTable("Orders");
                 });
@@ -100,9 +101,6 @@ namespace DataAccess.Migrations
                     b.Property<double>("ProductPrice")
                         .HasColumnType("float");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.HasKey("OrderDetailId");
 
                     b.HasIndex("OrderId");
@@ -120,26 +118,45 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
 
-                    b.Property<int>("AccountId")
+                    b.Property<string>("BankCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankTranNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CardType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ExpireDate")
+                    b.Property<DateTime>("PayDate")
                         .HasColumnType("datetime2");
 
                     b.Property<double>("PaymentAmount")
                         .HasColumnType("float");
 
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("PaymentInfo")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("TransactionNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TransactionStatus")
+                        .HasColumnType("int");
+
                     b.HasKey("PaymentId");
 
-                    b.HasIndex("AccountId");
+                    b.HasIndex("OrderId");
 
                     b.ToTable("Payments");
                 });
@@ -264,14 +281,6 @@ namespace DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DataAccess.Entities.Payment", "Payment")
-                        .WithMany()
-                        .HasForeignKey("PaymentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Payment");
-
                     b.Navigation("account");
                 });
 
@@ -296,13 +305,13 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("DataAccess.Entities.Payment", b =>
                 {
-                    b.HasOne("Repositories.Entities.Account", "account")
-                        .WithMany("payments")
-                        .HasForeignKey("AccountId")
+                    b.HasOne("DataAccess.Entities.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("account");
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("DataAccess.Entities.Product", b =>
@@ -338,8 +347,6 @@ namespace DataAccess.Migrations
                     b.Navigation("carts");
 
                     b.Navigation("orders");
-
-                    b.Navigation("payments");
                 });
 #pragma warning restore 612, 618
         }

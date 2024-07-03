@@ -32,7 +32,7 @@ namespace Business.Services.Implements
                 if (account != null)
                 {
                     var carts = await _unitOfWork.CartRepository
-                        .GetAsync(c => c.AccountId == accountId);
+                        .FindAsync(c => c.AccountId == accountId);
                     var result = _mapper.Map<List<CartResponse>>(carts.ToList());
                     return result;
                 }
@@ -54,10 +54,12 @@ namespace Business.Services.Implements
                 try
                 {
                     var existedAccount = await _unitOfWork.AccountRepository.GetByIDAsync(cartRequest.AccountId);
-                    if (existedAccount != null)
+                    var existedProduct = await _unitOfWork.ProductRepository.GetByIDAsync(cartRequest.ProductId);
+                    if (existedAccount != null && existedProduct != null)
                     {
                         var cart = _mapper.Map<Cart>(cartRequest);
                         cart.Status = 1;
+                        cart.UnitPrice = existedProduct.ProductPrice;
                         await _unitOfWork.CartRepository.InsertAsync(cart);
                         await _unitOfWork.SaveAsync();
                         await transaction.CommitAsync();

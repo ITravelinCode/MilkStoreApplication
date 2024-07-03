@@ -24,8 +24,7 @@ namespace Business.Models
             //Order
             CreateMap<OrderRequest, Order>();
             CreateMap<Order, OrderResponse>();
-            CreateMap<OrderDetailRequest, OrderDetail>()
-                .ForMember(order => order.Status, opt => opt.MapFrom(src => 1));
+            CreateMap<OrderDetailRequest, OrderDetail>();
             CreateMap<OrderDetail, OrderDetailResponse>();
             //Payment
             CreateMap<PaymentRequest, Payment>();

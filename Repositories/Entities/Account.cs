@@ -41,6 +41,5 @@ namespace Repositories.Entities
         public int Status { get; set; }
         public ICollection<Order>? orders { get; set; }
         public ICollection<Cart>? carts { get; set; }
-        public ICollection<Payment>? payments { get; set; }
     }
 }

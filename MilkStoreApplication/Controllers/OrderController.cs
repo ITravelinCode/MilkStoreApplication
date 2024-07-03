@@ -18,8 +18,8 @@ namespace MilkStoreApplication.Controllers
         {
             _orderService = orderService;
         }
-        [HttpPost("/api/v1/order")]
-        public async Task<IActionResult> CreateOrder([FromBody] OrderRequest orderRequest)
+        [HttpGet("/api/v1/order")]
+        public async Task<IActionResult> CreateOrder()
         {
             try
             {
@@ -29,7 +29,7 @@ namespace MilkStoreApplication.Controllers
                     var accountId = Util.GetInstance().ValidateJwtToken(token);
                     if (accountId.HasValue)
                     {
-                        var result = await _orderService.CreateOrder(accountId.Value, orderRequest);
+                        var result = await _orderService.CreateOrder(accountId.Value);
                         return Ok(result);
                     }
                     return Unauthorized("Not found account's information in token");

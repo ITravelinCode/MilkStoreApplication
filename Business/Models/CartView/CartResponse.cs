@@ -13,11 +13,10 @@ namespace Business.Models.CartView
     public class CartResponse
     {
         public int CartId { get; set; }
-        public int ProductId { get; set; }
         public int AccountId { get; set; }
-        public int CartQuantity { get; set; }
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+        public double UnitPrice { get; set; }
         public int Status { get; set; }
-        public Product Product { get; set; }
-        public Account Account { get; set; }
     }
 }

@@ -8,8 +8,7 @@ namespace Business.Models.OrderView
 {
     public class OrderRequest
     {
-        public double TotalPrice { get; set; }
-        public int PaymentId { get; set; }
+        public int OrderId { get; set; }    
         public List<OrderDetailRequest>? OrderDetails { get; set; }
     }
 }

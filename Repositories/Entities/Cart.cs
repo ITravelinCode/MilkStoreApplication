@@ -14,15 +14,15 @@ namespace DataAccess.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int CartId { get; set; }
+        public int AccountId { get; set; }
 
         [Required]
         public int ProductId { get; set; }
 
         [Required]
-        public int AccountId { get; set; }
-
-        [Required]
         public int Quantity { get; set; }
+        [Required] 
+        public double UnitPrice { get; set; }
 
         [Required]
         public int Status { get; set; }
