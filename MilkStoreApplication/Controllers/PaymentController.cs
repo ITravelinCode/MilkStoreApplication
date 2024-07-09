@@ -27,6 +27,10 @@ namespace MilkStoreApplication.Controllers
         {
             try
             {
+                if(parameters.vnp_BankTranNo == null)
+                {
+                    return Ok("Cancel Transaction");
+                }
                 var result = await _paymentService.CreatePayment(parameters);
                 return result != null ? Ok(result) : NotFound("Order does not created");
             }

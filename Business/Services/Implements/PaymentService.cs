@@ -44,7 +44,7 @@ namespace Business.Services.Implements
                             PayDate = DateTime.ParseExact(paymentRequest.vnp_PayDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture),
                             TransactionNo = paymentRequest.vnp_TransactionNo,
                             TransactionStatus = int.Parse(paymentRequest.vnp_TransactionStatus),
-                            PaymentAmount = double.Parse(paymentRequest.vnp_Amount),
+                            PaymentAmount = double.Parse(paymentRequest.vnp_Amount)/100,
                             OrderId = int.Parse(paymentRequest.vnp_TxnRef)
                         };
                         await _unitOfWork.PaymentRepository.InsertAsync(payment);
