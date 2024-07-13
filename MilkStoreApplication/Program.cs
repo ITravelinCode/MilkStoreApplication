@@ -84,6 +84,19 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Admin&CustomerPolicy", policy => policy.RequireRole("1", "2"));
 });
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
+//Add DI
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IProductService, ProductService>();
@@ -105,6 +118,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<RegisterAccountMiddleware>();
+
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 

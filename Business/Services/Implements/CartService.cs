@@ -32,7 +32,7 @@ namespace Business.Services.Implements
                 if (account != null)
                 {
                     var carts = await _unitOfWork.CartRepository
-                        .FindAsync(c => c.AccountId == accountId);
+                        .GetAsync(c => c.AccountId == accountId, null, "Product");
                     var result = _mapper.Map<List<CartResponse>>(carts.ToList());
                     return result;
                 }

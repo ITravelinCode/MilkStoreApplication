@@ -18,5 +18,6 @@ namespace Business.Models.CartView
         public int Quantity { get; set; }
         public double UnitPrice { get; set; }
         public int Status { get; set; }
+        public Product? product { get; set; }
     }
 }

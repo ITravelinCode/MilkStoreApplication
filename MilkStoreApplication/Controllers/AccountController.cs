@@ -23,7 +23,7 @@ namespace MilkStoreApplication.Controllers
             {
                 var result = await _accountService.Login(authRequest.Email, authRequest.Password);
                 if(string.IsNullOrEmpty(result)) return NotFound("Not found account");
-                return Ok(result);
+                return Ok(new { access_token = result });
             }
             catch (Exception ex)
             {

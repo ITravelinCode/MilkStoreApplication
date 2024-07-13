@@ -27,12 +27,26 @@ namespace MilkStoreApplication.Controllers
         {
             try
             {
-                if(parameters.vnp_BankTranNo == null)
+                string appScheme = "milkstore";
+
+                if (parameters.vnp_BankTranNo == null)
                 {
-                    return Ok("Cancel Transaction");
+                    string redirectUrl = $"{appScheme}://android-app?orderId={parameters.vnp_TxnRef}";
+
+                    return Redirect(redirectUrl);
                 }
                 var result = await _paymentService.CreatePayment(parameters);
-                return result != null ? Ok(result) : NotFound("Order does not created");
+
+                if (result != null)
+                {
+                    string redirectUrl = $"{appScheme}://android-app?status={result.TransactionStatus}&orderId={result.OrderId}";
+
+                    return Redirect(redirectUrl);
+                }
+                else
+                {
+                    return NotFound("Order does not created");
+                }
             }
             catch (Exception ex)
             {
@@ -40,47 +54,21 @@ namespace MilkStoreApplication.Controllers
             }
         }
 
-        //[HttpPut("/api/v1/payment")]
-        //[Authorize(Policy = "AdminPolicy")]
-        //public async Task<IActionResult> UpdatePayment([FromQuery] int paymentId, [FromBody] PaymentRequest paymentRequest)
+        //[HttpGet("/api/v1/payment/vpn-return")]
+        //public async Task<IActionResult> CreatePayment([FromQuery] PaymentRequest parameters)
         //{
         //    try
         //    {
-        //        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-        //        if (token != null)
+        //        if(parameters.vnp_BankTranNo == null)
         //        {
-        //            var accountId = Util.GetInstance().ValidateJwtToken(token);
-        //            if (accountId.HasValue)
-        //            {
-        //                paymentRequest.AccountId = accountId.Value;
-        //                var result = await _paymentService.UpdatePayment(paymentId, paymentRequest);
-        //                return result != null ? Ok(result) : BadRequest("Update fail");
-        //            }
-        //            return Unauthorized("Not found account's information in token");
+        //            return Ok("Cancel Transaction");
         //        }
-        //        else
-        //        {
-        //            return Unauthorized("Please login account");
-        //        }
+        //        var result = await _paymentService.CreatePayment(parameters);
+        //        return result != null ? Ok(result) : NotFound("Order does not created");
         //    }
         //    catch (Exception ex)
         //    {
-        //        return StatusCode(500, $"Inner Error: {ex}");
-        //    }
-        //}
-
-        //[HttpDelete("/api/v1/payment")]
-        //[Authorize(Policy = "AdminPolicy")]
-        //public async Task<IActionResult> DeletePayment([FromQuery] int paymentId)
-        //{
-        //    try
-        //    {
-        //        var result = await _paymentService.isDeletePayment(paymentId);
-        //        return result ? Ok("Delete success") : BadRequest("Delete fail");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"Inner Error: {ex}");
+        //        return StatusCode(500, ex.Message);
         //    }
         //}
     }
